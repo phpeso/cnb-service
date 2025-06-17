@@ -1,0 +1,120 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Peso\Services;
+
+use Arokettu\Clock\SystemClock;
+use Arokettu\Date\Calendar;
+use DateInterval;
+use Error;
+use Peso\Core\Exceptions\ConversionRateNotFoundException;
+use Peso\Core\Exceptions\RequestNotSupportedException;
+use Peso\Core\Helpers\Calculator;
+use Peso\Core\Requests\CurrentExchangeRateRequest;
+use Peso\Core\Requests\HistoricalExchangeRateRequest;
+use Peso\Core\Responses\ErrorResponse;
+use Peso\Core\Responses\SuccessResponse;
+use Peso\Core\Services\ExchangeRateServiceInterface;
+use Peso\Core\Services\SDK\Cache\NullCache;
+use Peso\Core\Services\SDK\Exceptions\HttpFailureException;
+use Peso\Core\Services\SDK\HTTP\DiscoveredHttpClient;
+use Peso\Core\Services\SDK\HTTP\DiscoveredRequestFactory;
+use Peso\Core\Types\Decimal;
+use Psr\Clock\ClockInterface;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\SimpleCache\CacheInterface;
+
+final readonly class CzechNationalBankService implements ExchangeRateServiceInterface
+{
+    private const ENDPOINT = 'https://www.cnb.cz/en/financial-markets/foreign-exchange-market/central-bank-exchange-rate-fixing/central-bank-exchange-rate-fixing/daily.txt';
+
+    public function __construct(
+        private CacheInterface $cache = new NullCache(),
+        private DateInterval $ttl = new DateInterval('PT1H'),
+        private ClientInterface $httpClient = new DiscoveredHttpClient(),
+        private RequestFactoryInterface $requestFactory = new DiscoveredRequestFactory(),
+        private ClockInterface $clock = new SystemClock(),
+    ) {
+    }
+
+    public function send(object $request): SuccessResponse|ErrorResponse
+    {
+        if ($request instanceof CurrentExchangeRateRequest) {
+            if ($request->quoteCurrency !== 'CZK') {
+                return new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+            }
+
+            $baseCurrency = $request->baseCurrency;
+            $date = '';
+        } elseif ($request instanceof HistoricalExchangeRateRequest) {
+            if ($request->quoteCurrency !== 'CZK') {
+                return new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+            }
+            if ($request->date->getYear() < 1991) {
+                return new ErrorResponse(new ConversionRateNotFoundException('No historical data for dates earlier than 1991'));
+            }
+            $today = Calendar::fromDateTime($this->clock->now());
+            if ($today->sub($request->date) < 0) {
+                return new ErrorResponse(new ConversionRateNotFoundException('Date seems to be in future'));
+            }
+
+            $baseCurrency = $request->baseCurrency;
+            $date = sprintf('?date=%2d.%2d.%d', $request->date->getDay(), $request->date->getMonthNumber(), $request->date->getYear());
+        } else {
+            return new ErrorResponse(RequestNotSupportedException::fromRequest($request));
+        }
+
+        $url = self::ENDPOINT . $date;
+        $cacheKey = hash('sha1', __CLASS__ . '|' . $url);
+
+        $data = $this->cache->get($cacheKey);
+
+        if ($data === null) {
+            $request = $this->requestFactory->createRequest('GET', $url);
+            $response = $this->httpClient->sendRequest($request);
+
+            if ($response->getStatusCode() !== 200) {
+                throw HttpFailureException::fromResponse($request, $response);
+            }
+
+            $responseData = (string)$response->getBody();
+
+            $lines = explode("\n", $responseData);
+
+            // line 0 is a date, line 2 is a header
+            if (($lines[1] ?? null) !== 'Country|Currency|Amount|Code|Rate') {
+                throw new Error('Format change?');
+            }
+
+            $data = [];
+            for ($i = 2; $i < \count($lines); ++$i) {
+                if ($lines[$i] === '') {
+                    break;
+                }
+                $line = explode('|', $lines[$i]);
+                $code = $line[3];
+                $rate = Calculator::multiply(new Decimal($line[4]), Calculator::invert(new Decimal($line[2])));
+                $data[$code] = $rate->value;
+            }
+
+            $this->cache->set($cacheKey, $data, $this->ttl);
+        }
+
+        return isset($data[$baseCurrency]) ?
+            new SuccessResponse(new Decimal($data[$baseCurrency])) :
+            new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+    }
+
+    public function supports(object $request): bool
+    {
+        if ($request instanceof CurrentExchangeRateRequest && $request->quoteCurrency === 'CZK') {
+            return true;
+        }
+        if ($request instanceof HistoricalExchangeRateRequest && $request->quoteCurrency === 'CZK' && $request->date->getYear() >= 1991) {
+            return true;
+        }
+        return false;
+    }
+}

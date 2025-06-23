@@ -1,5 +1,21 @@
 {
     "name": "peso/cnb-service",
+    "type": "library",
+    "description": "Czech National Bank data provider for Peso",
+    "keywords": ["currency", "exchange", "conversion", "phpeso", "peso", "cnb", "czech national bank"],
+    "homepage": "https://phpeso.readthedocs.io/",
+    "license": "MIT",
+    "authors": [{
+        "name": "Anton Smirnov",
+        "role": "developer",
+        "homepage": "https://sandfox.me/",
+        "email": "sandfox+phpeso@sandfox.me"
+    }],
+    "support": {
+        "issues": "https://github.com/phpeso/cnb-service/issues",
+        "source": "https://github.com/phpeso/cnb-service",
+        "docs": "https://phpeso.readthedocs.io/"
+    },
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
@@ -10,6 +26,11 @@
     "autoload": {
         "psr-4": {
             "Peso\\Services\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Peso\\Services\\Tests\\": "tests"
         }
     },
     "require": {

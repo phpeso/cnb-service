@@ -6,6 +6,7 @@ namespace Peso\Services;
 
 use Arokettu\Clock\SystemClock;
 use Arokettu\Date\Calendar;
+use Arokettu\Date\Date;
 use DateInterval;
 use Error;
 use Peso\Core\Exceptions\ConversionRateNotFoundException;
@@ -92,12 +93,25 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
 
             $lines = explode("\n", $responseData);
 
-            // line 0 is a date, line 2 is a header
+            // line 0 is a date
+
+            $dateLine = $lines[0] ?? '0';
+
+            if (!preg_match('/^(\d+ \w+ \d{4}) #\d+$/', $dateLine, $matches)) {
+                throw new Error('Format change?');
+            }
+
+            $date = Calendar::parseDateTimeString($matches[1]);
+
+            // line 1 is a header
             if (($lines[1] ?? null) !== 'Country|Currency|Amount|Code|Rate') {
                 throw new Error('Format change?');
             }
 
-            $data = [];
+            $data = [
+                'date' => $date->julianDay,
+                'rates' => [],
+            ];
             $calculator = Calculator::instance();
             for ($i = 2; $i < \count($lines); ++$i) {
                 if ($lines[$i] === '') {
@@ -109,14 +123,14 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
                 // a perfect decimal inversion that should not increase precision
                 $per = $calculator->trimZeros($calculator->invert(new Decimal($line[2])));
                 $rate = $calculator->multiply($rate, $per);
-                $data[$code] = $rate->value;
+                $data['rates'][$code] = $rate->value;
             }
 
             $this->cache->set($cacheKey, $data, $this->ttl);
         }
 
-        return isset($data[$baseCurrency]) ?
-            new SuccessResponse(new Decimal($data[$baseCurrency])) :
+        return isset($data['rates'][$baseCurrency]) ?
+            new SuccessResponse(new Decimal($data['rates'][$baseCurrency]), new Date($data['date'])) :
             new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
     }
 

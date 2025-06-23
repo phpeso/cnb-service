@@ -8,7 +8,9 @@
 
 * Rebased on Core 0.10
 
-### 0.1.0 "Alpha 1"
+### 0.1.0 "Alpha 1" 
+
+(untagged; e77e2011b997e6a079d3fa7c4c4444890a666ac0)
 
 *Jun 18, 2025* 
 

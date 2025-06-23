@@ -1,4 +1,4 @@
-# European Central Bank Service for Peso
+# Czech National Bank Service for Peso
 
 [![Packagist]][Packagist Link]
 [![PHP]][Packagist Link]

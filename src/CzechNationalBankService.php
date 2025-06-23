@@ -22,6 +22,7 @@ use Peso\Core\Services\SDK\Cache\NullCache;
 use Peso\Core\Services\SDK\Exceptions\HttpFailureException;
 use Peso\Core\Services\SDK\HTTP\DiscoveredHttpClient;
 use Peso\Core\Services\SDK\HTTP\DiscoveredRequestFactory;
+use Peso\Core\Services\SDK\HTTP\UserAgentHelper;
 use Peso\Core\Types\Decimal;
 use Psr\Clock\ClockInterface;
 use Psr\Http\Client\ClientInterface;
@@ -94,6 +95,11 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
 
         if ($data === null) {
             $request = $this->requestFactory->createRequest('GET', $url);
+            $request = $request->withHeader('User-Agent', UserAgentHelper::buildUserAgentString(
+                'CNB-Client',
+                'peso/cnb-service',
+                $request->hasHeader('User-Agent') ? $request->getHeaderLine('User-Agent') : null,
+            ));
             $response = $this->httpClient->sendRequest($request);
 
             if ($response->getStatusCode() !== 200) {

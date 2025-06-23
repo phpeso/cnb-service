@@ -98,13 +98,17 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
             }
 
             $data = [];
+            $calculator = Calculator::instance();
             for ($i = 2; $i < \count($lines); ++$i) {
                 if ($lines[$i] === '') {
                     break;
                 }
                 $line = explode('|', $lines[$i]);
                 $code = $line[3];
-                $rate = Calculator::multiply(new Decimal($line[4]), Calculator::invert(new Decimal($line[2])));
+                $rate = new Decimal($line[4]);
+                // a perfect decimal inversion that should not increase precision
+                $per = $calculator->trimZeros($calculator->invert(new Decimal($line[2])));
+                $rate = $calculator->multiply($rate, $per);
                 $data[$code] = $rate->value;
             }
 

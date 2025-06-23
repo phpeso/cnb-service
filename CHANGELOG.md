@@ -2,9 +2,16 @@
 
 ## Pre-release
 
+### 0.9.1
+
+*Jun 23, 2025*
+
+* Reversible factory
+* User agent
+
 ### 0.9.0 "Beta 1"
 
-*Jun 18, 2025*
+*Jun 23, 2025*
 
 * Rebased on Core 0.10
 

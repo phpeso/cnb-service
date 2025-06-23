@@ -10,3 +10,4 @@
 
 # tests
 /reports
+/.phpunit.result.cache

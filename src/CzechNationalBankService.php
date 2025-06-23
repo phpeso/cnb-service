@@ -67,7 +67,7 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
 
             $baseCurrency = $request->baseCurrency;
             $date = \sprintf(
-                '?date=%2d.%2d.%d',
+                '?date=%02d.%02d.%d',
                 $request->date->getDay(),
                 $request->date->getMonthNumber(),
                 $request->date->getYear()
@@ -98,14 +98,14 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
             $dateLine = $lines[0] ?? '0';
 
             if (!preg_match('/^(\d+ \w+ \d{4}) #\d+$/', $dateLine, $matches)) {
-                throw new Error('Format change?');
+                throw new Error('Invalid date. Format change?');
             }
 
             $date = Calendar::parseDateTimeString($matches[1]);
 
             // line 1 is a header
             if (($lines[1] ?? null) !== 'Country|Currency|Amount|Code|Rate') {
-                throw new Error('Format change?');
+                throw new Error('Invalid header. Format change?');
             }
 
             $data = [

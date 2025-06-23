@@ -28,7 +28,9 @@ use Psr\SimpleCache\CacheInterface;
 
 final readonly class CzechNationalBankService implements ExchangeRateServiceInterface
 {
+    // phpcs:disable Generic.Files.LineLength.TooLong
     private const ENDPOINT = 'https://www.cnb.cz/en/financial-markets/foreign-exchange-market/central-bank-exchange-rate-fixing/central-bank-exchange-rate-fixing/daily.txt';
+    // phpcs:enable Generic.Files.LineLength.TooLong
 
     public function __construct(
         private CacheInterface $cache = new NullCache(),
@@ -53,7 +55,9 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
                 return new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
             }
             if ($request->date->getYear() < 1991) {
-                return new ErrorResponse(new ConversionRateNotFoundException('No historical data for dates earlier than 1991'));
+                return new ErrorResponse(new ConversionRateNotFoundException(
+                    'No historical data for dates earlier than 1991'
+                ));
             }
             $today = Calendar::fromDateTime($this->clock->now());
             if ($today->sub($request->date) < 0) {
@@ -61,7 +65,12 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
             }
 
             $baseCurrency = $request->baseCurrency;
-            $date = sprintf('?date=%2d.%2d.%d', $request->date->getDay(), $request->date->getMonthNumber(), $request->date->getYear());
+            $date = \sprintf(
+                '?date=%2d.%2d.%d',
+                $request->date->getDay(),
+                $request->date->getMonthNumber(),
+                $request->date->getYear()
+            );
         } else {
             return new ErrorResponse(RequestNotSupportedException::fromRequest($request));
         }
@@ -112,7 +121,11 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
         if ($request instanceof CurrentExchangeRateRequest && $request->quoteCurrency === 'CZK') {
             return true;
         }
-        if ($request instanceof HistoricalExchangeRateRequest && $request->quoteCurrency === 'CZK' && $request->date->getYear() >= 1991) {
+        if (
+            $request instanceof HistoricalExchangeRateRequest &&
+            $request->quoteCurrency === 'CZK' &&
+            $request->date->getYear() >= 1991
+        ) {
             return true;
         }
         return false;

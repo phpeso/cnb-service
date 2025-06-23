@@ -36,8 +36,11 @@
     "require": {
         "php": "^8.2",
         "arokettu/system-clock": "^2.0",
-        "peso/core": "^0.1.5",
-        "psr/clock": "^1.0"
+        "peso/core": "^0.9",
+        "psr/clock": "^1.0",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.1",
+        "psr/simple-cache": "^3.0"
     },
     "require-dev": {
         "guzzlehttp/guzzle": "^7.9",

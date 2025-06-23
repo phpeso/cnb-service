@@ -36,7 +36,7 @@
     "require": {
         "php": "^8.2",
         "arokettu/system-clock": "^2.0",
-        "peso/core": "dev-master",
+        "peso/core": "^0.10.2",
         "psr/clock": "^1.0",
         "psr/http-client": "^1.0",
         "psr/http-factory": "^1.1",

@@ -11,7 +11,7 @@ use Peso\Core\Exceptions\ConversionRateNotFoundException;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
-use Peso\Core\Responses\SuccessResponse;
+use Peso\Core\Responses\ExchangeRateResponse;
 use Peso\Services\CzechNationalBankService;
 use Peso\Services\Tests\Helpers\MockClient;
 use PHPUnit\Framework\TestCase;
@@ -28,22 +28,22 @@ class RequestTest extends TestCase
         $service = new CzechNationalBankService(cache: $cache, httpClient: $http);
 
         $response = $service->send(new CurrentExchangeRateRequest('EUR', 'CZK'));
-        self::assertInstanceOf(SuccessResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateResponse::class, $response);
         self::assertEquals('24.825', $response->rate->value);
         self::assertEquals('2025-06-20', $response->date->toString());
 
         $response = $service->send(new CurrentExchangeRateRequest('CHF', 'CZK'));
-        self::assertInstanceOf(SuccessResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateResponse::class, $response);
         self::assertEquals('26.369', $response->rate->value);
         self::assertEquals('2025-06-20', $response->date->toString());
 
         $response = $service->send(new CurrentExchangeRateRequest('PHP', 'CZK'));
-        self::assertInstanceOf(SuccessResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateResponse::class, $response);
         self::assertEquals('0.37681', $response->rate->value);
         self::assertEquals('2025-06-20', $response->date->toString());
 
         $response = $service->send(new CurrentExchangeRateRequest('THB', 'CZK'));
-        self::assertInstanceOf(SuccessResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateResponse::class, $response);
         self::assertEquals('0.65740', $response->rate->value); // same precision after recalculation
         self::assertEquals('2025-06-20', $response->date->toString());
     }
@@ -59,22 +59,22 @@ class RequestTest extends TestCase
         $date = Calendar::parse('2025-06-13');
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'CZK', $date));
-        self::assertInstanceOf(SuccessResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateResponse::class, $response);
         self::assertEquals('24.840', $response->rate->value);
         self::assertEquals('2025-06-13', $response->date->toString());
 
         $response = $service->send(new HistoricalExchangeRateRequest('CHF', 'CZK', $date));
-        self::assertInstanceOf(SuccessResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateResponse::class, $response);
         self::assertEquals('26.540', $response->rate->value);
         self::assertEquals('2025-06-13', $response->date->toString());
 
         $response = $service->send(new HistoricalExchangeRateRequest('PHP', 'CZK', $date));
-        self::assertInstanceOf(SuccessResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateResponse::class, $response);
         self::assertEquals('0.38377', $response->rate->value);
         self::assertEquals('2025-06-13', $response->date->toString());
 
         $response = $service->send(new HistoricalExchangeRateRequest('THB', 'CZK', $date));
-        self::assertInstanceOf(SuccessResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateResponse::class, $response);
         self::assertEquals('0.66487', $response->rate->value);
         self::assertEquals('2025-06-13', $response->date->toString());
     }

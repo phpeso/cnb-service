@@ -15,7 +15,7 @@ use Peso\Core\Helpers\Calculator;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
-use Peso\Core\Responses\SuccessResponse;
+use Peso\Core\Responses\ExchangeRateResponse;
 use Peso\Core\Services\ExchangeRateServiceInterface;
 use Peso\Core\Services\ReversibleService;
 use Peso\Core\Services\SDK\Cache\NullCache;
@@ -54,7 +54,7 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
         return new ReversibleService(new self($cache, $ttl, $httpClient, $requestFactory, $clock));
     }
 
-    public function send(object $request): SuccessResponse|ErrorResponse
+    public function send(object $request): ExchangeRateResponse|ErrorResponse
     {
         if ($request instanceof CurrentExchangeRateRequest) {
             if ($request->quoteCurrency !== 'CZK') {
@@ -147,7 +147,7 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
         }
 
         return isset($data['rates'][$baseCurrency]) ?
-            new SuccessResponse(new Decimal($data['rates'][$baseCurrency]), new Date($data['date'])) :
+            new ExchangeRateResponse(new Decimal($data['rates'][$baseCurrency]), new Date($data['date'])) :
             new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
     }
 

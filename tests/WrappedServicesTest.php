@@ -7,7 +7,7 @@ namespace Peso\Services\Tests;
 use Peso\Core\Helpers\Calculator;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
-use Peso\Core\Responses\SuccessResponse;
+use Peso\Core\Responses\ExchangeRateResponse;
 use Peso\Services\CzechNationalBankService;
 use Peso\Services\Tests\Helpers\MockClient;
 use PHPUnit\Framework\TestCase;
@@ -27,7 +27,7 @@ class WrappedServicesTest extends TestCase
         self::assertInstanceOf(ErrorResponse::class, $baseService->send($request));
 
         $response = $service->send($request);
-        self::assertInstanceOf(SuccessResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateResponse::class, $response);
         // ignore calculator changes
         self::assertEquals('0.0463929', Calculator::instance()->round($response->rate, 7)->value);
     }

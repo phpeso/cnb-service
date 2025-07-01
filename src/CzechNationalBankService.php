@@ -9,14 +9,14 @@ use Arokettu\Date\Calendar;
 use Arokettu\Date\Date;
 use DateInterval;
 use Error;
-use Peso\Core\Exceptions\ConversionRateNotFoundException;
+use Peso\Core\Exceptions\ExchangeRateNotFoundException;
 use Peso\Core\Exceptions\RequestNotSupportedException;
 use Peso\Core\Helpers\Calculator;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Responses\ExchangeRateResponse;
-use Peso\Core\Services\ExchangeRateServiceInterface;
+use Peso\Core\Services\PesoServiceInterface;
 use Peso\Core\Services\ReversibleService;
 use Peso\Core\Services\SDK\Cache\NullCache;
 use Peso\Core\Services\SDK\Exceptions\HttpFailureException;
@@ -29,7 +29,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\SimpleCache\CacheInterface;
 
-final readonly class CzechNationalBankService implements ExchangeRateServiceInterface
+final readonly class CzechNationalBankService implements PesoServiceInterface
 {
     // phpcs:disable Generic.Files.LineLength.TooLong
     private const ENDPOINT = 'https://www.cnb.cz/en/financial-markets/foreign-exchange-market/central-bank-exchange-rate-fixing/central-bank-exchange-rate-fixing/daily.txt';
@@ -50,7 +50,7 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
         ClientInterface $httpClient = new DiscoveredHttpClient(),
         RequestFactoryInterface $requestFactory = new DiscoveredRequestFactory(),
         ClockInterface $clock = new SystemClock(),
-    ): ExchangeRateServiceInterface {
+    ): PesoServiceInterface {
         return new ReversibleService(new self($cache, $ttl, $httpClient, $requestFactory, $clock));
     }
 
@@ -58,23 +58,23 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
     {
         if ($request instanceof CurrentExchangeRateRequest) {
             if ($request->quoteCurrency !== 'CZK') {
-                return new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+                return new ErrorResponse(ExchangeRateNotFoundException::fromRequest($request));
             }
 
             $baseCurrency = $request->baseCurrency;
             $date = '';
         } elseif ($request instanceof HistoricalExchangeRateRequest) {
             if ($request->quoteCurrency !== 'CZK') {
-                return new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+                return new ErrorResponse(ExchangeRateNotFoundException::fromRequest($request));
             }
             if ($request->date->getYear() < 1991) {
-                return new ErrorResponse(new ConversionRateNotFoundException(
-                    'No historical data for dates earlier than 1991'
+                return new ErrorResponse(new ExchangeRateNotFoundException(
+                    'No historical data for dates earlier than 1991',
                 ));
             }
             $today = Calendar::fromDateTime($this->clock->now());
             if ($today->sub($request->date) < 0) {
-                return new ErrorResponse(new ConversionRateNotFoundException('Date seems to be in future'));
+                return new ErrorResponse(new ExchangeRateNotFoundException('Date seems to be in future'));
             }
 
             $baseCurrency = $request->baseCurrency;
@@ -82,7 +82,7 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
                 '?date=%02d.%02d.%d',
                 $request->date->getDay(),
                 $request->date->getMonthNumber(),
-                $request->date->getYear()
+                $request->date->getYear(),
             );
         } else {
             return new ErrorResponse(RequestNotSupportedException::fromRequest($request));
@@ -148,7 +148,7 @@ final readonly class CzechNationalBankService implements ExchangeRateServiceInte
 
         return isset($data['rates'][$baseCurrency]) ?
             new ExchangeRateResponse(new Decimal($data['rates'][$baseCurrency]), new Date($data['date'])) :
-            new ErrorResponse(ConversionRateNotFoundException::fromRequest($request));
+            new ErrorResponse(ExchangeRateNotFoundException::fromRequest($request));
     }
 
     public function supports(object $request): bool

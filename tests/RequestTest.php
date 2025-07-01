@@ -6,8 +6,7 @@ namespace Peso\Services\Tests;
 
 use Arokettu\Clock\StaticClock;
 use Arokettu\Date\Calendar;
-use Arokettu\Date\Date;
-use Peso\Core\Exceptions\ConversionRateNotFoundException;
+use Peso\Core\Exceptions\ExchangeRateNotFoundException;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
@@ -18,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Psr16Cache;
 
-class RequestTest extends TestCase
+final class RequestTest extends TestCase
 {
     public function testCurrentRate(): void
     {
@@ -85,15 +84,15 @@ class RequestTest extends TestCase
 
         $response = $service->send(new CurrentExchangeRateRequest('PHP', 'USD'));
         self::assertInstanceOf(ErrorResponse::class, $response);
-        self::assertInstanceOf(ConversionRateNotFoundException::class, $response->exception);
+        self::assertInstanceOf(ExchangeRateNotFoundException::class, $response->exception);
         self::assertEquals('Unable to find exchange rate for PHP/USD', $response->exception->getMessage());
 
         $response = $service->send(new HistoricalExchangeRateRequest('PHP', 'USD', Calendar::parse('2025-05-06')));
         self::assertInstanceOf(ErrorResponse::class, $response);
-        self::assertInstanceOf(ConversionRateNotFoundException::class, $response->exception);
+        self::assertInstanceOf(ExchangeRateNotFoundException::class, $response->exception);
         self::assertEquals(
             'Unable to find exchange rate for PHP/USD on 2025-05-06',
-            $response->exception->getMessage()
+            $response->exception->getMessage(),
         );
     }
 
@@ -103,10 +102,10 @@ class RequestTest extends TestCase
 
         $response = $service->send(new HistoricalExchangeRateRequest('PHP', 'CZK', Calendar::parse('1990-12-31')));
         self::assertInstanceOf(ErrorResponse::class, $response);
-        self::assertInstanceOf(ConversionRateNotFoundException::class, $response->exception);
+        self::assertInstanceOf(ExchangeRateNotFoundException::class, $response->exception);
         self::assertEquals(
             'No historical data for dates earlier than 1991',
-            $response->exception->getMessage()
+            $response->exception->getMessage(),
         );
     }
 }

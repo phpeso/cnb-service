@@ -9,18 +9,17 @@ use Arokettu\Date\Calendar;
 use Error;
 use GuzzleHttp\Psr7\Response;
 use Http\Mock\Client;
-use Peso\Core\Exceptions\ConversionRateNotFoundException;
+use Peso\Core\Exceptions\ExchangeRateNotFoundException;
 use Peso\Core\Exceptions\RequestNotSupportedException;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Services\SDK\Exceptions\HttpFailureException;
 use Peso\Services\CzechNationalBankService;
-use Peso\Services\EuropeanCentralBankService;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
-class EdgeCasesTest extends TestCase
+final class EdgeCasesTest extends TestCase
 {
     public function testInvalidRequest(): void
     {
@@ -41,7 +40,7 @@ class EdgeCasesTest extends TestCase
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'CZK', $future));
         self::assertInstanceOf(ErrorResponse::class, $response);
-        self::assertInstanceOf(ConversionRateNotFoundException::class, $response->exception);
+        self::assertInstanceOf(ExchangeRateNotFoundException::class, $response->exception);
         self::assertEquals('Date seems to be in future', $response->exception->getMessage());
     }
 

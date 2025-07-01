@@ -12,7 +12,7 @@ use Peso\Services\CzechNationalBankService;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
-class SupportTest extends TestCase
+final class SupportTest extends TestCase
 {
     public function testRequests(): void
     {
@@ -23,7 +23,7 @@ class SupportTest extends TestCase
         self::assertFalse($service->supports(new CurrentExchangeRateRequest('USD', 'EUR')));
         self::assertFalse($service->supports(new HistoricalExchangeRateRequest('USD', 'EUR', Date::today())));
         self::assertFalse($service->supports(
-            new HistoricalExchangeRateRequest('EUR', 'CZK', Calendar::parse('1990-01-01'))
+            new HistoricalExchangeRateRequest('EUR', 'CZK', Calendar::parse('1990-01-01')),
         ));
         self::assertFalse($service->supports(new stdClass()));
     }

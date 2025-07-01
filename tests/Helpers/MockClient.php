@@ -19,7 +19,7 @@ final readonly class MockClient
             // phpcs:disable Generic.Files.LineLength.TooLong
             new RequestMatcher('/en/financial-markets/foreign-exchange-market/central-bank-exchange-rate-fixing/central-bank-exchange-rate-fixing/daily.txt', 'www.cnb.cz', ['GET'], ['https']),
             // phpcs:enable Generic.Files.LineLength.TooLong
-            function (RequestInterface $request) {
+            static function (RequestInterface $request) {
                 $query = $request->getUri()->getQuery();
                 switch ($query) {
                     case '':
@@ -31,7 +31,7 @@ final readonly class MockClient
                     default:
                         throw new \LogicException('Non-mocked query: ' . $query);
                 }
-            }
+            },
         );
 
         return $client;

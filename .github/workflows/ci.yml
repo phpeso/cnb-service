@@ -11,4 +11,11 @@ jobs:
       - uses: php-actions/composer@v6
       - uses: php-actions/phpunit@v4
         with:
+          php_extensions: 'xdebug bcmath'
           bootstrap: 'vendor/autoload.php'
+          coverage_clover: 'clover.xml'
+        env:
+          XDEBUG_MODE: coverage
+      - uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_ORG_TOKEN }}

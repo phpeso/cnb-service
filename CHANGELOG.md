@@ -2,6 +2,12 @@
 
 ## 1.x
 
+### 1.0.2
+
+*Jul 11, 2025*
+
+* Relax psr/simple-cache requirement to allow v1 and v2
+
 ### 1.0.1
 
 *Jul 1, 2025*

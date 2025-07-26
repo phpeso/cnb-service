@@ -89,7 +89,7 @@ final readonly class CzechNationalBankService implements PesoServiceInterface
         }
 
         $url = self::ENDPOINT . $date;
-        $cacheKey = hash('sha1', __CLASS__ . '|' . $url);
+        $cacheKey = 'peso|cnb|' . hash('sha1', $url);
 
         $data = $this->cache->get($cacheKey);
 

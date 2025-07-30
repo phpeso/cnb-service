@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Peso\Services\CzechNationalBankService;
+namespace Peso\Services\CzechNationalBank;
 
 use Arokettu\Clock\SystemClock;
 use Arokettu\Date\Calendar;
@@ -22,7 +22,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\SimpleCache\CacheInterface;
 
-trait CNBCommon
+trait Common
 {
     public function __construct(
         private readonly CacheInterface $cache = new NullCache(),

@@ -15,8 +15,8 @@ use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Services\SDK\Exceptions\HttpFailureException;
-use Peso\Services\CzechNationalBankOtherCurrenciesService;
-use Peso\Services\CzechNationalBankService;
+use Peso\Services\CzechNationalBank\OtherCurrenciesService;
+use Peso\Services\CzechNationalBank\CentralBankFixingService;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -24,7 +24,7 @@ final class EdgeCasesTest extends TestCase
 {
     public function testInvalidRequest(): void
     {
-        $service = new CzechNationalBankService();
+        $service = new CentralBankFixingService();
 
         $response = $service->send(new stdClass());
         self::assertInstanceOf(ErrorResponse::class, $response);
@@ -34,7 +34,7 @@ final class EdgeCasesTest extends TestCase
 
     public function testInvalidRequestOther(): void
     {
-        $service = new CzechNationalBankOtherCurrenciesService();
+        $service = new OtherCurrenciesService();
 
         $response = $service->send(new stdClass());
         self::assertInstanceOf(ErrorResponse::class, $response);
@@ -47,7 +47,7 @@ final class EdgeCasesTest extends TestCase
         $clock = StaticClock::fromDateString('2025-06-18'); // 'now'
         $future = Calendar::parse('2025-06-19');
 
-        $service = new CzechNationalBankService(clock: $clock);
+        $service = new CentralBankFixingService(clock: $clock);
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'CZK', $future));
         self::assertInstanceOf(ErrorResponse::class, $response);
@@ -60,7 +60,7 @@ final class EdgeCasesTest extends TestCase
         $clock = StaticClock::fromDateString('2025-06-18'); // 'now'
         $future = Calendar::parse('2025-06-19');
 
-        $service = new CzechNationalBankOtherCurrenciesService(clock: $clock);
+        $service = new OtherCurrenciesService(clock: $clock);
 
         $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'CZK', $future));
         self::assertInstanceOf(ErrorResponse::class, $response);
@@ -73,7 +73,7 @@ final class EdgeCasesTest extends TestCase
         $http = new Client();
         $http->setDefaultResponse(new Response(500, body: 'Server error or something'));
 
-        $service = new CzechNationalBankService(httpClient: $http);
+        $service = new CentralBankFixingService(httpClient: $http);
 
         self::expectException(HttpFailureException::class);
         self::expectExceptionMessage('HTTP error 500. Response is "Server error or something"');
@@ -85,7 +85,7 @@ final class EdgeCasesTest extends TestCase
         $http = new Client();
         $http->setDefaultResponse(new Response(500, body: 'Server error or something'));
 
-        $service = new CzechNationalBankOtherCurrenciesService(httpClient: $http);
+        $service = new OtherCurrenciesService(httpClient: $http);
 
         self::expectException(HttpFailureException::class);
         self::expectExceptionMessage('HTTP error 500. Response is "Server error or something"');
@@ -97,7 +97,7 @@ final class EdgeCasesTest extends TestCase
         $http = new Client();
         $http->setDefaultResponse(new Response(body: 'Not a date'));
 
-        $service = new CzechNationalBankService(httpClient: $http);
+        $service = new CentralBankFixingService(httpClient: $http);
 
         self::expectException(Error::class);
         self::expectExceptionMessage('Invalid date. Format change?');
@@ -113,7 +113,7 @@ final class EdgeCasesTest extends TestCase
             Val1|1|1000
             BODY));
 
-        $service = new CzechNationalBankService(httpClient: $http);
+        $service = new CentralBankFixingService(httpClient: $http);
 
         self::expectException(Error::class);
         self::expectExceptionMessage('Invalid header. Format change?');

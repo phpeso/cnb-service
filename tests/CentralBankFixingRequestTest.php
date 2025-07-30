@@ -11,7 +11,7 @@ use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Responses\ExchangeRateResponse;
-use Peso\Services\CzechNationalBankService;
+use Peso\Services\CzechNationalBank\CentralBankFixingService;
 use Peso\Services\Tests\Helpers\MockClient;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -24,7 +24,7 @@ final class CentralBankFixingRequestTest extends TestCase
         $cache = new Psr16Cache(new ArrayAdapter());
         $http = MockClient::get();
 
-        $service = new CzechNationalBankService(cache: $cache, httpClient: $http);
+        $service = new CentralBankFixingService(cache: $cache, httpClient: $http);
 
         $response = $service->send(new CurrentExchangeRateRequest('EUR', 'CZK'));
         self::assertInstanceOf(ExchangeRateResponse::class, $response);
@@ -53,7 +53,7 @@ final class CentralBankFixingRequestTest extends TestCase
         $http = MockClient::get();
         $clock = StaticClock::fromDateString('2025-06-20');
 
-        $service = new CzechNationalBankService(cache: $cache, httpClient: $http, clock: $clock);
+        $service = new CentralBankFixingService(cache: $cache, httpClient: $http, clock: $clock);
 
         $date = Calendar::parse('2025-06-13');
 
@@ -80,7 +80,7 @@ final class CentralBankFixingRequestTest extends TestCase
 
     public function testCzkOnly(): void
     {
-        $service = new CzechNationalBankService();
+        $service = new CentralBankFixingService();
 
         $response = $service->send(new CurrentExchangeRateRequest('PHP', 'USD'));
         self::assertInstanceOf(ErrorResponse::class, $response);
@@ -98,7 +98,7 @@ final class CentralBankFixingRequestTest extends TestCase
 
     public function testAfter1991Only(): void
     {
-        $service = new CzechNationalBankService();
+        $service = new CentralBankFixingService();
 
         $response = $service->send(new HistoricalExchangeRateRequest('PHP', 'CZK', Calendar::parse('1990-12-31')));
         self::assertInstanceOf(ErrorResponse::class, $response);

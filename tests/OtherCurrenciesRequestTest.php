@@ -11,7 +11,7 @@ use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Responses\ExchangeRateResponse;
-use Peso\Services\CzechNationalBankOtherCurrenciesService;
+use Peso\Services\CzechNationalBank\OtherCurrenciesService;
 use Peso\Services\Tests\Helpers\MockClient;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
@@ -24,7 +24,7 @@ final class OtherCurrenciesRequestTest extends TestCase
         $cache = new Psr16Cache(new ArrayAdapter());
         $http = MockClient::get();
 
-        $service = new CzechNationalBankOtherCurrenciesService(cache: $cache, httpClient: $http);
+        $service = new OtherCurrenciesService(cache: $cache, httpClient: $http);
 
         $response = $service->send(new CurrentExchangeRateRequest('RSD', 'CZK'));
         self::assertInstanceOf(ExchangeRateResponse::class, $response);
@@ -53,7 +53,7 @@ final class OtherCurrenciesRequestTest extends TestCase
         $http = MockClient::get();
         $clock = StaticClock::fromDateString('2025-06-20');
 
-        $service = new CzechNationalBankOtherCurrenciesService(cache: $cache, httpClient: $http, clock: $clock);
+        $service = new OtherCurrenciesService(cache: $cache, httpClient: $http, clock: $clock);
 
         $date = Calendar::parse('2025-06-13');
 
@@ -84,7 +84,7 @@ final class OtherCurrenciesRequestTest extends TestCase
         $http = MockClient::get();
         $clock = StaticClock::fromDateString('2025-06-20');
 
-        $service = new CzechNationalBankOtherCurrenciesService(cache: $cache, httpClient: $http, clock: $clock);
+        $service = new OtherCurrenciesService(cache: $cache, httpClient: $http, clock: $clock);
 
         $date = Calendar::parse('2015-01-12'); // this should request data for Dec 2014
 
@@ -111,7 +111,7 @@ final class OtherCurrenciesRequestTest extends TestCase
 
     public function testCzkOnly(): void
     {
-        $service = new CzechNationalBankOtherCurrenciesService();
+        $service = new OtherCurrenciesService();
 
         $response = $service->send(new CurrentExchangeRateRequest('PHP', 'USD'));
         self::assertInstanceOf(ErrorResponse::class, $response);
@@ -129,7 +129,7 @@ final class OtherCurrenciesRequestTest extends TestCase
 
     public function testAfter2004Only(): void
     {
-        $service = new CzechNationalBankOtherCurrenciesService();
+        $service = new OtherCurrenciesService();
 
         $response = $service->send(new HistoricalExchangeRateRequest('PHP', 'CZK', Calendar::parse('1990-12-31')));
         self::assertInstanceOf(ErrorResponse::class, $response);
@@ -142,7 +142,7 @@ final class OtherCurrenciesRequestTest extends TestCase
 
     public function testAfterJuneOnly(): void
     {
-        $service = new CzechNationalBankOtherCurrenciesService();
+        $service = new OtherCurrenciesService();
 
         $response = $service->send(new HistoricalExchangeRateRequest('PHP', 'CZK', Calendar::parse('2004-05-31')));
         self::assertInstanceOf(ErrorResponse::class, $response);

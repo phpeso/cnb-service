@@ -7,7 +7,7 @@ namespace Peso\Services\Tests;
 use Composer\InstalledVersions;
 use Http\Discovery\Psr17Factory;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
-use Peso\Services\CzechNationalBankService;
+use Peso\Services\CzechNationalBank\CentralBankFixingService;
 use Peso\Services\Tests\Helpers\MockClient;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -22,7 +22,7 @@ final class UserAgentTest extends TestCase
         $cache = new Psr16Cache(new ArrayAdapter());
         $http = MockClient::get();
 
-        $service = new CzechNationalBankService(cache: $cache, httpClient: $http);
+        $service = new CentralBankFixingService(cache: $cache, httpClient: $http);
 
         $pesoVersion = InstalledVersions::getPrettyVersion('peso/core');
         $clientVersion = InstalledVersions::getPrettyVersion('peso/cnb-service');
@@ -56,7 +56,7 @@ final class UserAgentTest extends TestCase
             }
         };
 
-        $service = new CzechNationalBankService(cache: $cache, httpClient: $http, requestFactory: $requestFactory);
+        $service = new CentralBankFixingService(cache: $cache, httpClient: $http, requestFactory: $requestFactory);
 
         $pesoVersion = InstalledVersions::getPrettyVersion('peso/core');
         $clientVersion = InstalledVersions::getPrettyVersion('peso/cnb-service');

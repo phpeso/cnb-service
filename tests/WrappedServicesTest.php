@@ -8,7 +8,7 @@ use Peso\Core\Helpers\Calculator;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Responses\ExchangeRateResponse;
-use Peso\Services\CzechNationalBankService;
+use Peso\Services\CzechNationalBank\CentralBankFixingService;
 use Peso\Services\Tests\Helpers\MockClient;
 use PHPUnit\Framework\TestCase;
 
@@ -18,8 +18,8 @@ final class WrappedServicesTest extends TestCase
     {
         $http = MockClient::get();
 
-        $baseService = new CzechNationalBankService(httpClient: $http);
-        $service = CzechNationalBankService::reversible(httpClient: $http);
+        $baseService = new CentralBankFixingService(httpClient: $http);
+        $service = CentralBankFixingService::reversible(httpClient: $http);
 
         $request = new CurrentExchangeRateRequest('CZK', 'USD');
 

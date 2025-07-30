@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Peso\Services;
+namespace Peso\Services\CzechNationalBank;
 
 use Arokettu\Date\Calendar;
 use Arokettu\Date\Date;
@@ -14,11 +14,13 @@ use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Responses\ExchangeRateResponse;
 use Peso\Core\Services\PesoServiceInterface;
 use Peso\Core\Types\Decimal;
-use Peso\Services\CzechNationalBankService\CNBCommon;
 
-final readonly class CzechNationalBankService implements PesoServiceInterface
+/**
+ * Official CNB daily rates
+ */
+final readonly class CentralBankFixingService implements PesoServiceInterface
 {
-    use CNBCommon;
+    use Common;
 
     // phpcs:disable Generic.Files.LineLength.TooLong
     private const ENDPOINT = 'https://www.cnb.cz/en/financial-markets/foreign-exchange-market/central-bank-exchange-rate-fixing/central-bank-exchange-rate-fixing/daily.txt';

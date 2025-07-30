@@ -8,8 +8,8 @@ use Arokettu\Date\Calendar;
 use Arokettu\Date\Date;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
-use Peso\Services\CzechNationalBankOtherCurrenciesService;
-use Peso\Services\CzechNationalBankService;
+use Peso\Services\CzechNationalBank\OtherCurrenciesService;
+use Peso\Services\CzechNationalBank\CentralBankFixingService;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -17,7 +17,7 @@ final class SupportTest extends TestCase
 {
     public function testRequests(): void
     {
-        $service = new CzechNationalBankService();
+        $service = new CentralBankFixingService();
 
         self::assertTrue($service->supports(new CurrentExchangeRateRequest('EUR', 'CZK')));
         self::assertTrue($service->supports(new HistoricalExchangeRateRequest('EUR', 'CZK', Date::today())));
@@ -31,7 +31,7 @@ final class SupportTest extends TestCase
 
     public function testRequestsOther(): void
     {
-        $service = new CzechNationalBankOtherCurrenciesService();
+        $service = new OtherCurrenciesService();
 
         self::assertTrue($service->supports(new CurrentExchangeRateRequest('EUR', 'CZK')));
         self::assertTrue($service->supports(new HistoricalExchangeRateRequest('EUR', 'CZK', Date::today())));

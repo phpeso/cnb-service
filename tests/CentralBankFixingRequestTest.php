@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Psr16Cache;
 
-final class RequestTest extends TestCase
+final class CentralBankFixingRequestTest extends TestCase
 {
     public function testCurrentRate(): void
     {

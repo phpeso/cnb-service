@@ -16,12 +16,12 @@ use Peso\Core\Services\PesoServiceInterface;
 use Peso\Core\Types\Decimal;
 use Peso\Services\CzechNationalBankService\CNBCommon;
 
-final readonly class CzechNationalBankService implements PesoServiceInterface
+final readonly class CzechNationalBankOtherCurrenciesService implements PesoServiceInterface
 {
     use CNBCommon;
 
     // phpcs:disable Generic.Files.LineLength.TooLong
-    private const ENDPOINT = 'https://www.cnb.cz/en/financial-markets/foreign-exchange-market/central-bank-exchange-rate-fixing/central-bank-exchange-rate-fixing/daily.txt';
+    private const ENDPOINT = 'https://www.cnb.cz/en/financial-markets/foreign-exchange-market/fx-rates-of-other-currencies/fx-rates-of-other-currencies/fx_rates.txt';
     // phpcs:enable Generic.Files.LineLength.TooLong
 
     public function send(object $request): ExchangeRateResponse|ErrorResponse
@@ -32,14 +32,17 @@ final readonly class CzechNationalBankService implements PesoServiceInterface
             }
 
             $baseCurrency = $request->baseCurrency;
-            $date = '';
+            $query = '';
         } elseif ($request instanceof HistoricalExchangeRateRequest) {
             if ($request->quoteCurrency !== 'CZK') {
                 return new ErrorResponse(ExchangeRateNotFoundException::fromRequest($request));
             }
-            if ($request->date->getYear() < 1991) {
+            if (
+                $request->date->getYear() < 2004 ||
+                $request->date->getYear() === 2004 && $request->date->getMonthNumber() < 6
+            ) {
                 return new ErrorResponse(new ExchangeRateNotFoundException(
-                    'No historical data for dates earlier than 1991',
+                    'No historical data for dates earlier than June 2004',
                 ));
             }
             $today = Calendar::fromDateTime($this->clock->now());
@@ -48,17 +51,22 @@ final readonly class CzechNationalBankService implements PesoServiceInterface
             }
 
             $baseCurrency = $request->baseCurrency;
-            $date = \sprintf(
-                '?date=%02d.%02d.%d',
-                $request->date->getDay(),
-                $request->date->getMonthNumber(),
-                $request->date->getYear(),
-            );
+            $year = $request->date->getYear();
+            $month = $request->date->getMonthNumber() - 1; // previous month
+            if ($month === 0) {
+                $month = 12;
+                $year -= 1;
+            }
+
+            $query = '?' . http_build_query([
+                'year' => $year,
+                'month' => $month,
+            ], encoding_type: PHP_QUERY_RFC3986);
         } else {
             return new ErrorResponse(RequestNotSupportedException::fromRequest($request));
         }
 
-        $url = self::ENDPOINT . $date;
+        $url = self::ENDPOINT . $query;
         $data = $this->getRateData($url);
 
         return isset($data['rates'][$baseCurrency]) ?
@@ -73,8 +81,11 @@ final readonly class CzechNationalBankService implements PesoServiceInterface
         }
         if (
             $request instanceof HistoricalExchangeRateRequest &&
-            $request->quoteCurrency === 'CZK' &&
-            $request->date->getYear() >= 1991
+            $request->quoteCurrency === 'CZK' && (
+                $request->date->getYear() >= 2005 ||
+                // 31 May 2004 is the earliest day making June 2004 the earliest usable date
+                $request->date->getYear() === 2004 && $request->date->getMonthNumber() >= 6
+            )
         ) {
             return true;
         }

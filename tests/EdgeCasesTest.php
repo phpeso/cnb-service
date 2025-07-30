@@ -15,6 +15,7 @@ use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Services\SDK\Exceptions\HttpFailureException;
+use Peso\Services\CzechNationalBankOtherCurrenciesService;
 use Peso\Services\CzechNationalBankService;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -24,6 +25,16 @@ final class EdgeCasesTest extends TestCase
     public function testInvalidRequest(): void
     {
         $service = new CzechNationalBankService();
+
+        $response = $service->send(new stdClass());
+        self::assertInstanceOf(ErrorResponse::class, $response);
+        self::assertInstanceOf(RequestNotSupportedException::class, $response->exception);
+        self::assertEquals('Unsupported request type: "stdClass"', $response->exception->getMessage());
+    }
+
+    public function testInvalidRequestOther(): void
+    {
+        $service = new CzechNationalBankOtherCurrenciesService();
 
         $response = $service->send(new stdClass());
         self::assertInstanceOf(ErrorResponse::class, $response);
@@ -44,12 +55,37 @@ final class EdgeCasesTest extends TestCase
         self::assertEquals('Date seems to be in future', $response->exception->getMessage());
     }
 
+    public function testFutureDateOther(): void
+    {
+        $clock = StaticClock::fromDateString('2025-06-18'); // 'now'
+        $future = Calendar::parse('2025-06-19');
+
+        $service = new CzechNationalBankOtherCurrenciesService(clock: $clock);
+
+        $response = $service->send(new HistoricalExchangeRateRequest('EUR', 'CZK', $future));
+        self::assertInstanceOf(ErrorResponse::class, $response);
+        self::assertInstanceOf(ExchangeRateNotFoundException::class, $response->exception);
+        self::assertEquals('Date seems to be in future', $response->exception->getMessage());
+    }
+
     public function testHttpFailure(): void
     {
         $http = new Client();
         $http->setDefaultResponse(new Response(500, body: 'Server error or something'));
 
         $service = new CzechNationalBankService(httpClient: $http);
+
+        self::expectException(HttpFailureException::class);
+        self::expectExceptionMessage('HTTP error 500. Response is "Server error or something"');
+        $service->send(new CurrentExchangeRateRequest('EUR', 'CZK'));
+    }
+
+    public function testHttpFailureOther(): void
+    {
+        $http = new Client();
+        $http->setDefaultResponse(new Response(500, body: 'Server error or something'));
+
+        $service = new CzechNationalBankOtherCurrenciesService(httpClient: $http);
 
         self::expectException(HttpFailureException::class);
         self::expectExceptionMessage('HTTP error 500. Response is "Server error or something"');

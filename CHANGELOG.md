@@ -2,6 +2,13 @@
 
 ## 1.x
 
+### 1.1.0
+
+*Jul 30, 2025*
+
+* `\Peso\Services\CzechNationalBankService` renamed to `\Peso\Services\CzechNationalBank\CentralBankFixingService`
+* Added OtherCurrenciesService
+
 ### 1.0.2
 
 *Jul 11, 2025*

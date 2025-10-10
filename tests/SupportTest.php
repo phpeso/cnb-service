@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright 2025 Anton Smirnov
+ * @license MIT https://spdx.org/licenses/MIT.html
+ */
+
 declare(strict_types=1);
 
 namespace Peso\Services\Tests;
@@ -8,8 +13,8 @@ use Arokettu\Date\Calendar;
 use Arokettu\Date\Date;
 use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
-use Peso\Services\CzechNationalBank\OtherCurrenciesService;
 use Peso\Services\CzechNationalBank\CentralBankFixingService;
+use Peso\Services\CzechNationalBank\OtherCurrenciesService;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 

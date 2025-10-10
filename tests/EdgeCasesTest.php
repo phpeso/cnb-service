@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright 2025 Anton Smirnov
+ * @license MIT https://spdx.org/licenses/MIT.html
+ */
+
 declare(strict_types=1);
 
 namespace Peso\Services\Tests;
@@ -15,8 +20,8 @@ use Peso\Core\Requests\CurrentExchangeRateRequest;
 use Peso\Core\Requests\HistoricalExchangeRateRequest;
 use Peso\Core\Responses\ErrorResponse;
 use Peso\Core\Services\SDK\Exceptions\HttpFailureException;
-use Peso\Services\CzechNationalBank\OtherCurrenciesService;
 use Peso\Services\CzechNationalBank\CentralBankFixingService;
+use Peso\Services\CzechNationalBank\OtherCurrenciesService;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
